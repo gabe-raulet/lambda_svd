@@ -4,7 +4,7 @@ INCS=-I/opt/homebrew/Cellar/openblas/0.3.24/include -I/opt/homebrew/include
 LIBS=-L/opt/homebrew/Cellar/lapack/3.12.0/lib -L/opt/homebrew/Cellar/openblas/0.3.24/lib
 LINKS=-llapacke -lopenblas
 PROGS=svd_serial
-FILES=kiss.c
+FILES=kiss.c mmiodense.c
 CFLAGS=-Wall
 
 D?=0

@@ -4,15 +4,18 @@
 #include <assert.h>
 #include <unistd.h>
 #include "kiss.h"
+#include "mmiodense.h"
 #include "cblas.h"
 #include "lapacke.h"
 
 int log2i(int v);
+int param_check(int m, int n, int p, int b, int r, int s);
 
 int svds_naive(double *A, double *Up, double *Sp, double *Vpt, int m, int n, int p);
 int seed_node(double *Ai, double *A1i, double *Vt1i, int m, int n, int q, int p);
 int combine_node(double *Ak_2i_0, double *Vtk_2i_0, double *Ak_2i_1, double *Vtk_2i_1, double *Ak1_lj, double *Vtk1_lj, int m, int n, int k, int q, int p);
 int extract_node(double *Aq1_11, double *Vtq1_11, double *Aq1_12, double *Vtq1_12, double *U, double *S, double *Vt, int m, int n, int q, int p);
+int get_file_handlers(FILE **handlers, char const *oprefix);
 
 int svd_serial
 (
@@ -26,39 +29,65 @@ int svd_serial
     int b  /* number of seed nodes in binary topology */
 );
 
+
 int main(int argc, char *argv[])
 {
-    if (argc != 5)
+
+    if (argc != 6)
     {
-        fprintf(stderr, "usage: %s <m:nrows> <n:ncols> <p:trunc> <b:nprocs>\n", argv[0]);
+        fprintf(stderr, "usage: %s <m:nrows> <n:ncols> <p:trunc> <b:nprocs> <oprefix>\n", argv[0]);
         return 1;
     }
 
-    int m = atoi(argv[1]);
-    int n = atoi(argv[2]);
-    int p = atoi(argv[3]);
-    int b = atoi(argv[4]);
+    kiss_init();
 
+    int m = atoi(argv[1]), n = atoi(argv[2]), p = atoi(argv[3]), b = atoi(argv[4]);
     int r = m < n? m : n;
     int s = n / b;
 
-    if (!(m >= 1 && n >= 1) || (m&(m-1)) || (n&(n-1)))
-    {
-        fprintf(stderr, "[main::error::param_check][m=%d,n=%d] must have m,n >= 1 with m and n both powers of 2\n", m, n);
+    if (param_check(m, n, p, b, r, s) != 0)
         return 1;
+
+    char const *oprefix = argv[5];
+
+    double *A, *Up, *Sp, *Vtp;
+
+    A = malloc(m*n*sizeof(double));
+    Up = malloc(m*p*sizeof(double));
+    Sp = malloc(p*sizeof(double));
+    Vtp = malloc(p*n*sizeof(double));
+
+    /*
+     * Generate random matrix A.
+     */
+
+    for (int i = 0; i < m*n; ++i)
+        A[i] = kiss_unirandf();
+
+    svd_serial(A, Up, Sp, Vtp, m, n, p, b);
+
+    FILE *handlers[4];
+
+    get_file_handlers(handlers, oprefix);
+
+    FILE *Afh = handlers[0], *Ufh = handlers[1], *Sfh = handlers[2], *Vfh = handlers[3];
+
+    mmio_write_dense(Afh, A, m, n);
+    mmio_write_dense(Ufh, Up, m, p);
+    mmio_write_dense(Vfh, Vtp, p, n);
+
+    for (int i = 0; i < p; ++i)
+    {
+        fprintf(Sfh, "%.18e\n", Sp[i]);
     }
 
-    if ((b&(b-1)) || b <= 0)
-    {
-        fprintf(stderr, "[main::error::param_check][b=%d] must have b >= 1 with b being a power of 2\n", b);
-        return 1;
-    }
+    for (int i = 0; i < 4; ++i)
+        fclose(handlers[i]);
 
-    if (!(p <= r && p <= s))
-    {
-        fprintf(stderr, "[main::error::param_check][p=%d,r=%d,s=%d] must have p <= r and p <= s\n", p, r, s);
-        return 1;
-    }
+    free(A);
+    free(Up);
+    free(Sp);
+    free(Vtp);
 
     return 0;
 }
@@ -289,6 +318,49 @@ int svd_serial
     free(Acat);
     free(Vtcat);
     free(Al);
+
+    return 0;
+}
+
+
+int param_check(int m, int n, int p, int b, int r, int s)
+{
+    if (!(m >= 1 && n >= 1) || (m&(m-1)) || (n&(n-1)))
+    {
+        fprintf(stderr, "[main::error::param_check][m=%d,n=%d] must have m,n >= 1 with m and n both powers of 2\n", m, n);
+        return 1;
+    }
+
+    if ((b&(b-1)) || b <= 0)
+    {
+        fprintf(stderr, "[main::error::param_check][b=%d] must have b >= 1 with b being a power of 2\n", b);
+        return 1;
+    }
+
+    if (!(p <= r && p <= s))
+    {
+        fprintf(stderr, "[main::error::param_check][p=%d,r=%d,s=%d] must have p <= r and p <= s\n", p, r, s);
+        return 1;
+    }
+
+    return 0;
+}
+
+int get_file_handlers(FILE **handlers, char const *oprefix)
+{
+    char fname[1024];
+
+    snprintf(fname, 1024, "%s_A.mtx", oprefix);
+    handlers[0] = fopen(fname, "w");
+
+    snprintf(fname, 1024, "%s_Up.mtx", oprefix);
+    handlers[1] = fopen(fname, "w");
+
+    snprintf(fname, 1024, "%s_Sp.txt", oprefix);
+    handlers[2] = fopen(fname, "w");
+
+    snprintf(fname, 1024, "%s_Vtp.mtx", oprefix);
+    handlers[3] = fopen(fname, "w");
 
     return 0;
 }
