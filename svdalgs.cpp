@@ -9,6 +9,14 @@
 #include "cblas.h"
 #include "lapacke.h"
 
+int log2i(int v)
+{
+    int x = 0;
+    while (v >>= 1) ++x;
+    return x;
+}
+
+
 int svds_naive(double *A, double *Up, double *Sp, double *Vpt, int m, int n, int p)
 {
     int r = m < n? m : n;

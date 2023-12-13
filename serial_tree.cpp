@@ -5,13 +5,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-int log2i(int v)
-{
-    int x = 0;
-    while (v >>= 1) ++x;
-    return x;
-}
-
 int serial_tree
 (
     double *A, /* input m-by-n matrix */
