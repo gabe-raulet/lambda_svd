@@ -1,0 +1,8 @@
+cmake-build-debug/
+build/
+.idea/
+.DS_Store
+docs/html/
+docs/latex/
+.aws-sam/
+samconfig.toml

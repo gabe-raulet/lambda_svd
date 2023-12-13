@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_STANDARD 17)
 project(lambda_svd LANGUAGES CXX)
 
 find_package(MPI REQUIRED)
+#find_package(aws-lambda-runtime REQUIRED)
+#find_package(AWSSDK COMPONENTS s3)
 
 set(LAPACK_INCLUDE_DIRS "/opt/homebrew/Cellar/openblas/0.3.24/include")
 set(LAPACK_LIBRARIES "-L/opt/homebrew/Cellar/lapack/3.12.0/lib -L/opt/homebrew/Cellar/openblas/0.3.24/lib -llapacke -lopenblas")
 
-add_library(lambda_svd kiss.cpp mmiodense.cpp svdalgs.cpp serial_tree.cpp dist_mpi_tree.cpp mpitimer.cpp)
+add_library(lambda_svd kiss.cpp mmiodense.cpp svdalgs.cpp serial_tree.cpp dist_mpi_tree.cpp dist_fmi_tree.cpp mpitimer.cpp fmi_wrapper.cpp)
 
-include_directories(PUBLIC ${LAPACK_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 link_libraries(${LAPACK_LIBRARIES})
 
 if (TARGET MPI::MPI_CXX)
@@ -19,6 +21,11 @@ else()
     target_include_directories(lambda_svd PUBLIC ${MPI_CXX_INCLUDE_PATH})
 endif()
 
-add_subdirectory(svd_serial svd_serial)
-add_subdirectory(svd_mpi svd_mpi)
+add_subdirectory(./fmi)
+target_link_libraries(lambda_svd PUBLIC FMI)
+#target_link_libraries(lambda_svd PUBLIC FMI AWS::aws-lambda-runtime ${AWSSDK_LINK_LIBRARIES})
+target_include_directories(lambda_svd PUBLIC ${FMI_INCLUDE_DIRS} ${LAPACK_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 
+add_subdirectory(./svd_serial)
+add_subdirectory(./svd_mpi)
+add_subdirectory(./svd_fmi)
