@@ -18,3 +18,4 @@ target_link_libraries(lambda_svd PRIVATE lapacke "-lcblas")
 
 add_subdirectory(./svd_serial)
 add_subdirectory(./svd_fmi)
+add_subdirectory(./svd_aws)
