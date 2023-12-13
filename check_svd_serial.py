@@ -22,7 +22,9 @@ def main(oprefix):
     Sp2 = S[:p]
     Vtp2 = Vt[:p,:]
 
-    print(f"Aerr = {np.linalg.norm(A-Ap):.10e}")
+    Ap2 = Up2@np.diag(Sp2)@Vtp2
+
+    print(f"Aerr = {np.linalg.norm(Ap-Ap2):.10e}")
     print(f"Serr = {np.linalg.norm(Sp-Sp2):.10e}")
     print(f"Uerr = {np.linalg.norm(Up@Up.T - Up2@Up2.T):.10e}")
     print(f"Verr = {np.linalg.norm(Vtp.T@Vtp - Vtp2.T@Vtp2):.10e}")
