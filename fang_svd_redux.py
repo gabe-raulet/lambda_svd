@@ -53,8 +53,8 @@ def combine_node(Ak_2i_0, Vtk_2i_0, Ak_2i_1, Vtk_2i_1, m, n, k, q, p):
 
 def extract_node(Aq1_11, Vtq1_11, Aq1_12, Vtq1_12, m, n, q, p):
     Ah, Qtq = combine_node(Aq1_11, Vtq1_11, Aq1_12, Vtq1_12, m, n, q, q, p)
-    Uq, Sq, Vtq = svds(Ah, p)
-    Vtq = Vtq@Qtq
+    Uq, Sq, Ptq = svds(Ah, p)
+    Vtq = Ptq@Qtq
     return Uq, Sq, Vtq
 
 def svd_serial(A, p, q):
@@ -91,6 +91,7 @@ def svd_serial(A, p, q):
     Vtq1_12 = Vtmem[1]
 
     Uq, Sq, Vtq = extract_node(Aq1_11, Vtq1_11, Aq1_12, Vtq1_12, m, n, q, p)
+    #AV = A@Vtq.T
 
     return Uq, Sq, Vtq
 
@@ -123,7 +124,7 @@ if __name__ == "__main__":
     p = 5
     q = 3
     r = min(m,n)
-    alpha = 1.1
+    alpha = 5
 
     # A, U, S, V = regular_matrix(m, n)
     A, U, S, Vt = damped_matrix(m, n, r, alpha)
@@ -132,10 +133,10 @@ if __name__ == "__main__":
     Aq = Uq@np.diag(Sq)@Vtq
 
     mmwrite("fang_A.mtx", A)
-    mmwrite("fang_Uq.mtx", Uq)
-    mmwrite("fang_Vtq.mtx", Vtq)
+    mmwrite("fang_Up.mtx", Uq)
+    mmwrite("fang_Vtp.mtx", Vtq)
 
-    with open("fang_Sq.txt", "w") as f:
+    with open("fang_Sp.txt", "w") as f:
         for i in range(p):
             f.write(f"{Sq[i]:.18e}\n")
 
