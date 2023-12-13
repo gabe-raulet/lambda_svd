@@ -86,7 +86,7 @@ int mm_is_valid(MM_typecode matcode);		/* too complex for a macro */
 
    MM_matrix_typecode: 4-character sequence
 
-				    ojbect 		sparse/   	data        storage 
+				    ojbect 		sparse/   	data        storage
 						  		dense     	type        scheme
 
    string position:	 [0]        [1]			[2]         [3]
@@ -98,19 +98,19 @@ int mm_is_valid(MM_typecode matcode);		/* too complex for a macro */
 
  ***********************************************************************/
 
-#define MM_MTX_STR		"matrix"
-#define MM_ARRAY_STR	"array"
-#define MM_DENSE_STR	"array"
-#define MM_COORDINATE_STR "coordinate" 
-#define MM_SPARSE_STR	"coordinate"
-#define MM_COMPLEX_STR	"complex"
-#define MM_REAL_STR		"real"
-#define MM_INT_STR		"integer"
-#define MM_GENERAL_STR  "general"
-#define MM_SYMM_STR		"symmetric"
-#define MM_HERM_STR		"hermitian"
-#define MM_SKEW_STR		"skew-symmetric"
-#define MM_PATTERN_STR  "pattern"
+static char MM_MTX_STR[] = "matrix";
+static char MM_ARRAY_STR[] = "array";
+static char MM_DENSE_STR[] = "array";
+static char MM_COORDINATE_STR[] = "coordinate";
+static char MM_SPARSE_STR[] = "coordinate";
+static char MM_COMPLEX_STR[] = "complex";
+static char MM_REAL_STR[] = "real";
+static char MM_INT_STR[] = "integer";
+static char MM_GENERAL_STR[] = "general";
+static char MM_SYMM_STR[] = "symmetric";
+static char MM_HERM_STR[] = "hermitian";
+static char MM_SKEW_STR[] = "skew-symmetric";
+static char MM_PATTERN_STR[] = "pattern";
 
 /*
  * mmio.c
@@ -626,7 +626,7 @@ double* mmio_read_dense(FILE *f, int *m, int *n)
     mm_read_banner(f, &matcode);
     assert(mm_is_dense(matcode));
     mm_read_mtx_array_size(f, &_m, &_n);
-    A = malloc(_m*_n*sizeof(double));
+    A = (double*)malloc(_m*_n*sizeof(double));
     assert(A != NULL);
 
     for (i = 0; i < _m*_n; ++i)

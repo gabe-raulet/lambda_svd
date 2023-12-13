@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
 
     double *A, *Up, *Sp, *Vtp;
 
-    A = malloc(m*n*sizeof(double));
-    Up = malloc(m*p*sizeof(double));
-    Sp = malloc(p*sizeof(double));
-    Vtp = malloc(p*n*sizeof(double));
+    A = (double*)malloc(m*n*sizeof(double));
+    Up = (double*)malloc(m*p*sizeof(double));
+    Sp = (double*)malloc(p*sizeof(double));
+    Vtp = (double*)malloc(p*n*sizeof(double));
 
     /*
      * Generate random matrix A.
@@ -107,10 +107,10 @@ int svds_naive(double *A, double *Up, double *Sp, double *Vpt, int m, int n, int
 
     double *S, *U, *Vt, *work;
 
-    work = malloc(5*r*sizeof(double));
-    S = malloc(r*sizeof(double));
-    U = malloc(m*r*sizeof(double));
-    Vt = malloc(r*n*sizeof(double));
+    work = (double*)malloc(5*r*sizeof(double));
+    S = (double*)malloc(r*sizeof(double));
+    U = (double*)malloc(m*r*sizeof(double));
+    Vt = (double*)malloc(r*n*sizeof(double));
 
     LAPACKE_dgesvd(LAPACK_COL_MAJOR, 'S', 'S', m, n, A, m, S, U, m, Vt, r, work);
 
@@ -144,12 +144,12 @@ double* combine_routine(double *Ak_2i_0, double *Vtk_2i_0, double *Ak_2i_1, doub
     s = n / b;
     d = (1 << (k-1)) * s;
 
-    Aki = malloc(m*(2*p)*sizeof(double));
+    Aki = (double*)malloc(m*(2*p)*sizeof(double));
 
     memcpy(&Aki[0],   Ak_2i_0, m*p*sizeof(double));
     memcpy(&Aki[m*p], Ak_2i_1, m*p*sizeof(double));
 
-    Vhtki = calloc((2*p)*(2*d), sizeof(double));
+    Vhtki = (double*)calloc((2*p)*(2*d), sizeof(double));
 
     for (int j = 0; j < d; ++j)
     {
@@ -157,8 +157,8 @@ double* combine_routine(double *Ak_2i_0, double *Vtk_2i_0, double *Ak_2i_1, doub
         memcpy(&Vhtki[(j+d)*(2*p)+p], &Vtk_2i_1[j*p], p*sizeof(double));
     }
 
-    Ski = malloc(p*sizeof(double));
-    Vtki = malloc(p*(2*p)*sizeof(double));
+    Ski = (double*)malloc(p*sizeof(double));
+    Vtki = (double*)malloc(p*(2*p)*sizeof(double));
 
     svds_naive(Aki, USki, Ski, Vtki, m, 2*p, p);
 
@@ -168,7 +168,7 @@ double* combine_routine(double *Ak_2i_0, double *Vtk_2i_0, double *Ak_2i_1, doub
 
     free(Ski);
 
-    W = malloc((2*d)*p*sizeof(double));
+    W = (double*)malloc((2*d)*p*sizeof(double));
 
     cblas_dgemm(CblasColMajor, CblasTrans, CblasTrans, 2*d, p, 2*p, 1.0, Vhtki, 2*p, Vtki, p, 0.0, W, 2*d);
 
@@ -176,7 +176,7 @@ double* combine_routine(double *Ak_2i_0, double *Vtk_2i_0, double *Ak_2i_1, doub
     free(Vhtki);
 
     assert(2*d >= p);
-    tau = malloc(p*sizeof(double));
+    tau = (double*)malloc(p*sizeof(double));
 
     LAPACKE_dgeqrf(LAPACK_COL_MAJOR, 2*d, p, W, 2*d, tau);
     LAPACKE_dtrtri(LAPACK_COL_MAJOR, 'U', 'N', p, W, 2*d);
@@ -216,7 +216,7 @@ int seed_node(double *Ai, double *A1i, double *Vt1i, int m, int n, int q, int p)
     int b = 1 << q;
     int s = n / b;
 
-    double *Sp = malloc(p*sizeof(double));
+    double *Sp = (double*)malloc(p*sizeof(double));
 
     svds_naive(Ai, A1i, Sp, Vt1i, m, s, p);
 
@@ -232,8 +232,8 @@ int extract_node(double *Aq1_11, double *Vtq1_11, double *Aq1_12, double *Vtq1_1
 {
     double *USq, *Qq, *Vtp;
 
-    USq = malloc(m*p*sizeof(double));
-    Vtp = malloc(p*n*sizeof(double));
+    USq = (double*)malloc(m*p*sizeof(double));
+    Vtp = (double*)malloc(p*n*sizeof(double));
 
     Qq = combine_routine(Aq1_11, Vtq1_11, Aq1_12, Vtq1_12, USq, m, n, q, q, p);
 
@@ -270,11 +270,11 @@ int svd_serial
 
     double *Al, *Ai, *A1i, *Vt1i, *Acat, *Vtcat;
 
-    Al = malloc(m*n*sizeof(double));
+    Al = (double*)malloc(m*n*sizeof(double));
     memcpy(Al, A, m*n*sizeof(double));
 
-    Acat = malloc(m*p*b*sizeof(double));
-    Vtcat = malloc(p*s*b*sizeof(double));
+    Acat = (double*)malloc(m*p*b*sizeof(double));
+    Vtcat = (double*)malloc(p*s*b*sizeof(double));
 
     for (int i = 0; i < b; ++i)
     {
