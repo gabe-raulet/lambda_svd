@@ -10,7 +10,5 @@ RUN curl -LO https://boostorg.jfrog.io/artifactory/main/release/1.77.0/source/bo
 RUN cd /opt && git clone --recurse-submodules https://github.com/aws/aws-sdk-cpp.git
 RUN cd /opt/aws-sdk-cpp && mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/software -DBUILD_ONLY="s3" && \
     cmake --build . --config Release -- -j12 && cmake --install . --config Release
-RUN yum -y install openmpi-devel
-
-#&& cd aws-sdk-cpp && mkdir build && cd build && \
+#RUN cd /opt/aws-sdk-cpp && mkdir build && cd build && \
     #cmake3 .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF && make -j12 install
