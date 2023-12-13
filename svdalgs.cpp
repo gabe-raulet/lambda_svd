@@ -21,7 +21,13 @@ int svds_naive(double *A, double *Up, double *Sp, double *Vpt, int m, int n, int
 {
     int r = m < n? m : n;
 
-    assert(A != NULL && Up != NULL && Sp != NULL && Vpt != NULL && r >= p && p >= 1);
+    //assert(A != NULL && Up != NULL && Sp != NULL && Vpt != NULL && r >= p && p >= 1);
+    assert(A != NULL);
+    assert(Up != NULL);
+    assert(Sp != NULL);
+    assert(Vpt != NULL);
+    assert(r >= p);
+    assert(p >= 1);
 
     double *S, *U, *Vt, *work;
 

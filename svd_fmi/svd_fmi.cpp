@@ -20,9 +20,9 @@ int main(int argc, char *argv[])
     int myrank = atoi(argv[1]);
     int nprocs = atoi(argv[2]);
 
-    if (argc != 7)
+    if (argc != 6)
     {
-        if (!myrank) fprintf(stderr, "usage: %s <myrank> <nprocs> <m:nrows> <n:ncols> <p:trunc> <oprefix>\n", argv[0]);
+        if (!myrank) fprintf(stderr, "usage: %s <myrank> <nprocs> <m:nrows> <n:ncols> <p:trunc>\n", argv[0]);
         return 1;
     }
 
@@ -72,31 +72,31 @@ int main(int argc, char *argv[])
     if (dist_fmi_tree(Aloc, Up, Sp, Vtp, m, n, p, 0, myrank, nprocs, comm) != 0)
         return 1;
 
-    char fname[1024];
-    snprintf(fname, 1024, "%s_A_%d_%d.mtx", oprefix, myrank+1, nprocs);
-    mmwrite(fname, Aloc, m, s);
+    //char fname[1024];
+    //snprintf(fname, 1024, "%s_A_%d_%d.mtx", oprefix, myrank+1, nprocs);
+    //mmwrite(fname, Aloc, m, s);
     free(Aloc);
 
     if (!myrank)
     {
-        FILE *handlers[4];
+        //FILE *handlers[4];
 
-        get_file_handlers(handlers, oprefix);
+        //get_file_handlers(handlers, oprefix);
 
-        FILE *Afh = handlers[0], *Ufh = handlers[1], *Sfh = handlers[2], *Vfh = handlers[3];
+        //FILE *Afh = handlers[0], *Ufh = handlers[1], *Sfh = handlers[2], *Vfh = handlers[3];
 
-        mmio_write_dense(Ufh, Up, m, p);
-        mmio_write_dense(Vfh, Vtp, p, n);
+        //mmio_write_dense(Ufh, Up, m, p);
+        //mmio_write_dense(Vfh, Vtp, p, n);
 
-        for (int i = 0; i < p; ++i)
-        {
-            fprintf(Sfh, "%.18e\n", Sp[i]);
-        }
+        //for (int i = 0; i < p; ++i)
+        //{
+        //    fprintf(Sfh, "%.18e\n", Sp[i]);
+        //}
 
-        for (int i = 0; i < 4; ++i)
-            fclose(handlers[i]);
+        //for (int i = 0; i < 4; ++i)
+        //    fclose(handlers[i]);
 
-        free(A);
+        //free(A);
         free(Up);
         free(Sp);
         free(Vtp);

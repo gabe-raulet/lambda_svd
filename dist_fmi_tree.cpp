@@ -96,15 +96,20 @@ int dist_fmi_tree
 
     double *Aq1_11, *Aq1_12, *Vtq1_11, *Vtq1_12;
 
-    Aq1_11 = &Amem[0];
-    Aq1_12 = &Amem[m*p];
-    Vtq1_11 = &Vtmem[0];
-    Vtq1_12 = &Vtmem[(n*p)>>1];
+    if (myrank == root)
+    {
+        Aq1_11 = &Amem[0];
+        Aq1_12 = &Amem[m*p];
+        Vtq1_11 = &Vtmem[0];
+        Vtq1_12 = &Vtmem[(n*p)>>1];
 
-    extract_node(Aq1_11, Vtq1_11, Aq1_12, Vtq1_12, Up, Sp, Vtp, m, n, q, p);
+        extract_node(Aq1_11, Vtq1_11, Aq1_12, Vtq1_12, Up, Sp, Vtp, m, n, q, p);
+    }
 
     free(A1i);
     free(Vt1i);
+
+    comm.barrier();
     return 0;
 }
 

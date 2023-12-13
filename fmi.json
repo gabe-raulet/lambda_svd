@@ -1,0 +1,23 @@
+{
+  "backends": {
+    "Direct": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 10000,
+      "max_timeout": 10000
+    }
+  },
+  "model": {
+    "FaaS": {
+      "gib_second_price": 0.0000166667
+    },
+    "Direct": {
+      "bandwidth": 400.0,
+      "overhead": 0.34,
+      "transfer_price": 0.0,
+      "vm_price": 0.0134,
+      "requests_per_hour": 1000,
+      "include_infrastructure_costs": true
+    }
+  }
+}

@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 project(lambda_svd LANGUAGES CXX)
 
+#add_compile_options(-fsanitize=address)
+#add_link_options(-fsanitize=address)
+
 find_package(MPI REQUIRED)
 #find_package(aws-lambda-runtime REQUIRED)
 #find_package(AWSSDK COMPONENTS s3)
@@ -13,13 +16,9 @@ add_library(lambda_svd kiss.cpp mmiodense.cpp svdalgs.cpp serial_tree.cpp dist_m
 
 link_libraries(${LAPACK_LIBRARIES})
 
-if (TARGET MPI::MPI_CXX)
-    target_link_libraries(lambda_svd PUBLIC MPI::MPI_CXX)
-else()
-    target_compile_options(lambda_svd PUBLIC ${MPI_CXX_COMPILE_FLAGS})
-    target_link_libraries(lambda_svd PUBLIC ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINKFLAGS})
-    target_include_directories(lambda_svd PUBLIC ${MPI_CXX_INCLUDE_PATH})
-endif()
+target_compile_options(lambda_svd PUBLIC ${MPI_CXX_COMPILE_FLAGS})
+target_link_libraries(lambda_svd PUBLIC ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINKFLAGS})
+target_include_directories(lambda_svd PUBLIC ${MPI_CXX_INCLUDE_PATH})
 
 add_subdirectory(./fmi)
 target_link_libraries(lambda_svd PUBLIC FMI)
