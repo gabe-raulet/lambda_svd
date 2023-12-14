@@ -102,7 +102,7 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
     }
     else
     {
-        assert(0&&"mattype must be tall, or wide");
+        m = n = r;
     }
 
     s = n / nprocs;
@@ -152,10 +152,7 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
     mpi_timer_start(&timer);
 
     if (dist_mpi_tree(Aloc, Utest, Stest, Vttest, m, n, p, 0, comm))
-    {
-        MPI_Finalize();
         return 1;
-    }
 
     mpi_timer_stop(&timer);
     mpi_timer_query(&timer, &maxtime, &proctime);
@@ -176,12 +173,6 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
 
 int stored_benchmark(int argc, char *argv[], MPI_Comm comm)
 {
-    /*
-     * Usage: mpirun -np $nprocs svd_mpi_bench {stored} <p:trunc> <iprefix> <oprefix>
-     */
-
-    assert(0&&"TODO: FIX");
-
     int myrank, nprocs;
     char const *iprefix;
     char const *oprefix;
@@ -194,12 +185,24 @@ int stored_benchmark(int argc, char *argv[], MPI_Comm comm)
     MPI_Comm_size(comm, &nprocs);
     MPI_Comm_rank(comm, &myrank);
 
+    if (argc != 5)
+    {
+        if (!myrank) fprintf(stderr, "Usage: mpirun -np $nprocs %s [stored] <p:trunc> <iprefix> <oprefix>\n", argv[0]);
+        return 1;
+    }
+
     p = atoi(argv[2]);
     iprefix = argv[3];
     oprefix = argv[4];
 
     snprintf(fname, BUFSIZE, "%s_A_%d_%d.mtx", iprefix, myrank+1, nprocs);
     Aloc = mmread(fname, &m, &s);
+
+    if (!Aloc)
+    {
+        if (!myrank) fprintf(stderr, "error: unable to open file named '%s'\n", fname);
+        return 1;
+    }
 
     n = s*nprocs;
     r = m < n? m : n;
@@ -223,7 +226,9 @@ int stored_benchmark(int argc, char *argv[], MPI_Comm comm)
         Utest = Stest = Vttest = NULL;
     }
 
-    assert(!dist_mpi_tree(Aloc, Utest, Stest, Vttest, m, n, p, 0, comm));
+    if (dist_mpi_tree(Aloc, Utest, Stest, Vttest, m, n, p, 0, comm))
+        return 1;
+
     free(Aloc);
 
     if (!myrank)

@@ -729,7 +729,9 @@ double* mmread(char const *fname, int *m, int *n)
     double *A;
     FILE *f;
 
-    f = fopen(fname, "r");
+    if ((f = fopen(fname, "r")) == NULL)
+        return NULL;
+
     A = mmio_read_dense(f, m, n);
     fclose(f);
 
