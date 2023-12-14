@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 project(lambda_svd LANGUAGES CXX)
 
-#add_compile_options(-fsanitize=address)
-#add_link_options(-fsanitize=address)
+add_compile_options(-fsanitize=address -O0 -g -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address)
 
 find_package(MPI REQUIRED)
 #find_package(aws-lambda-runtime REQUIRED)
