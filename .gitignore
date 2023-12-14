@@ -2,3 +2,4 @@
 *.dSYM
 *.mtx
 build
+__pycache__

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include <iostream>
 #include <fmi.h>
 #include <string>
 #include "kiss.h"
@@ -20,9 +21,9 @@ int main(int argc, char *argv[])
     int myrank = atoi(argv[1]);
     int nprocs = atoi(argv[2]);
 
-    if (argc != 6)
+    if (argc != 7)
     {
-        if (!myrank) fprintf(stderr, "usage: %s <myrank> <nprocs> <m:nrows> <n:ncols> <p:trunc>\n", argv[0]);
+        if (!myrank) fprintf(stderr, "usage: %s <myrank> <nprocs> <m:nrows> <n:ncols> <p:trunc> <name>\n", argv[0]);
         return 1;
     }
 
@@ -33,7 +34,7 @@ int main(int argc, char *argv[])
     int r = m < n? m : n;
     int s = n / nprocs;
 
-    std::string comm_name = std::to_string(std::time(nullptr));
+    std::string comm_name = std::string(argv[6]);
     std::string config_path = "fmi.json";
 
     auto comm = FMI::Communicator(myrank, nprocs, config_path, comm_name);
@@ -62,6 +63,7 @@ int main(int argc, char *argv[])
         Up = Sp = Vtp = NULL;
     }
 
+
     /*
      * Generate matrix A in parallel.
      */
@@ -72,35 +74,31 @@ int main(int argc, char *argv[])
     if (dist_fmi_tree(Aloc, Up, Sp, Vtp, m, n, p, 0, myrank, nprocs, comm) != 0)
         return 1;
 
-    //char fname[1024];
-    //snprintf(fname, 1024, "%s_A_%d_%d.mtx", oprefix, myrank+1, nprocs);
-    //mmwrite(fname, Aloc, m, s);
+    char fname[1024];
+    snprintf(fname, 1024, "A_%d_%d.mtx", myrank+1, nprocs);
+    mmwrite(fname, Aloc, m, s);
     free(Aloc);
 
     if (!myrank)
     {
-        //FILE *handlers[4];
+        mmwrite("Uh.mtx", Up, m, p);
+        mmwrite("Vth.mtx", Vtp, p, n);
 
-        //get_file_handlers(handlers, oprefix);
+        FILE *f = fopen("Sh.txt", "w");
 
-        //FILE *Afh = handlers[0], *Ufh = handlers[1], *Sfh = handlers[2], *Vfh = handlers[3];
+        for (int i = 0; i < p; ++i)
+        {
+            fprintf(f, "%.18e\n", Sp[i]);
+        }
 
-        //mmio_write_dense(Ufh, Up, m, p);
-        //mmio_write_dense(Vfh, Vtp, p, n);
+        fclose(f);
 
-        //for (int i = 0; i < p; ++i)
-        //{
-        //    fprintf(Sfh, "%.18e\n", Sp[i]);
-        //}
-
-        //for (int i = 0; i < 4; ++i)
-        //    fclose(handlers[i]);
-
-        //free(A);
         free(Up);
-        free(Sp);
         free(Vtp);
+        free(Sp);
     }
+
+    comm.barrier();
 
     return 0;
 }
@@ -133,7 +131,7 @@ int get_file_handlers(FILE **handlers, char const *oprefix)
     char fname[1024];
 
     snprintf(fname, 1024, "%s_A.mtx", oprefix);
-    //handlers[0] = fopen(fname, "w");
+    handlers[0] = fopen(fname, "w");
 
     snprintf(fname, 1024, "%s_Up.mtx", oprefix);
     handlers[1] = fopen(fname, "w");

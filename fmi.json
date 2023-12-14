@@ -1,10 +1,16 @@
 {
   "backends": {
+    "DirectEC2": {
+      "enabled": false,
+      "host": "13.57.222.48",
+      "port": 5000,
+      "max_timeout": 50000
+    },
     "Direct": {
       "enabled": true,
       "host": "127.0.0.1",
-      "port": 10000,
-      "max_timeout": 10000
+      "port": 5000,
+      "max_timeout": 5000
     }
   },
   "model": {
@@ -12,7 +18,7 @@
       "gib_second_price": 0.0000166667
     },
     "Direct": {
-      "bandwidth": 400.0,
+      "bandwidth": 1000.0,
       "overhead": 0.34,
       "transfer_price": 0.0,
       "vm_price": 0.0134,
