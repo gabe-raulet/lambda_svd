@@ -107,6 +107,8 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
 
     s = n / nprocs;
 
+    if (!myrank) fprintf(stderr, "[params]{\"m\":%d,\"n\":%d,\"r\":%d,\"p\":%d,\"s\":%d,\"nprocs\":%d}\n", m, n, r, p, s, nprocs);
+
     assert(n % nprocs == 0);
     assert(a >= 1);
     assert(nprocs >= 2);
@@ -117,7 +119,6 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
     assert(p <= r);
     assert(p <= s);
 
-    if (!myrank) fprintf(stderr, "[svd_mpi_bench][random][m=%d,n=%d,r=%d,p=%d,s=%d,nprocs=%d]\n", m, n, r, p, s, nprocs);
 
     double maxtime, proctime;
 
@@ -147,7 +148,7 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
     mpi_timer_stop(&timer);
     mpi_timer_query(&timer, &maxtime, &proctime);
 
-    if (!myrank) fprintf(stderr, "[initialization][maxtime=%.5f(s),proctime=%.5f(s),meantime=%.5f(s)]\n", maxtime, proctime, proctime / nprocs);
+    if (!myrank) fprintf(stderr, "[init]{\"maxtime\":%.5e,\"proctime\":%.5e}\n", maxtime, proctime);
 
     mpi_timer_start(&timer);
 
@@ -157,7 +158,7 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
     mpi_timer_stop(&timer);
     mpi_timer_query(&timer, &maxtime, &proctime);
 
-    if (!myrank) fprintf(stderr, "[dist_mpi_tree][maxtime=%.5f(s),proctime=%.5f(s),meantime=%.5f(s)]\n", maxtime, proctime, proctime / nprocs);
+    if (!myrank) fprintf(stderr, "[dist_mpi_tree]{\"maxtime\":%.5e,\"proctime\":%.5e}\n", maxtime, proctime);
 
     free(Aloc);
 
