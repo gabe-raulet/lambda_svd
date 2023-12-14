@@ -43,6 +43,7 @@ if __name__ == "__main__":
                 mattypes = ["tall"] if mscale == 1 else ["tall", "wide"]
                 for mattype in mattypes:
                     output = run_test(p, r, mscale, nprocs, mattype)
+                    print(output)
                     runs.append(parse_test_output(output))
 
     table = pd.DataFrame(runs)

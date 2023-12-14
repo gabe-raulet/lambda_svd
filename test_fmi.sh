@@ -23,7 +23,7 @@ wait $rank_pid
 pkill -f tcpunchd
 pkill -f svd_fmi
 
-python check_fmi_results.py $nprocs
+python scripts/check_fmi_results.py $nprocs
 
 rm Uh.mtx Sh.txt Vth.mtx
 rm A_*.mtx

@@ -9,7 +9,7 @@ timestamp=$(date +%s)
 
 mpirun -np $nprocs ./build/svd_mpi/svd_mpi $nrows $ncols $trunc output
 
-python check_mpi_results.py $nprocs
+python scripts/check_mpi_results.py $nprocs
 
 rm output_*.txt output_*.mtx
 
