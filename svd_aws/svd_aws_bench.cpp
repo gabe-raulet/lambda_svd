@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <Communicator.h>
 #include <sstream>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +53,8 @@ static invocation_response my_handler(invocation_request const& req)
     seed = v.GetInteger("seed");
     mattype = v.GetString("mattype");
 
+    a = 1;
+
     if (!strcmp(mattype.c_str(), "tall"))
     {
         n = r;
@@ -69,11 +72,14 @@ static invocation_response my_handler(invocation_request const& req)
 
     s = n / nprocs;
 
+    std::ostringstream res;
+    res << "myrank=" << myrank << ",nprocs=" << nprocs << ",m=" << m << ",n=" << n <<",r=" << r << ",p=" << p << ",seed=" << seed << ",mattype=" << mattype << ",a=" << a << "\n";
     auto comm = FMI::Communicator(myrank, nprocs, "fmi.json", timestamp);
 
-    std::ostringstream res;
+    res << "hello from " << myrank << "\n";
 
-    auto t1 = std::chrono::high_resolution_clock::now();
+    //auto t1 = std::chrono::high_resolution_clock::now();
+    clock_t t1 = clock();
 
     kiss_seed(myrank*seed);
 
@@ -93,25 +99,31 @@ static invocation_response my_handler(invocation_request const& req)
         Utest = Stest = Vttest = NULL;
     }
 
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(t2-t1);
+    //auto t2 = std::chrono::high_resolution_clock::now();
+    clock_t t2 = clock();
+    //auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1);
+    double elapsed = ((double)(t2-t1))/CLOCKS_PER_SEC;
+    res << myrank << " took " << elapsed << " seconds to initialize\n";
+    //res << myrank << " took " << elapsed.count() << " seconds to initialize\n";
 
-    res << myrank << " took " << elapsed.count() << " seconds to initialize\n";
-
-    t1 = std::chrono::high_resolution_clock::now();
+    t1 = clock();
+    //t1 = std::chrono::high_resolution_clock::now();
 
     if (dist_fmi_tree(Aloc, Utest, Stest, Vttest, m, n, p, 0, myrank, nprocs, comm) != 0)
     {
         return invocation_response::failure("dist_fmi_tree failed", "dist_fmi_tree_error");
     }
 
-    t2 = std::chrono::high_resolution_clock::now();
-    elapsed = std::chrono::duration_cast<std::chrono::seconds>(t2-t1);
+    //t2 = std::chrono::high_resolution_clock::now();
+    t2 = clock();
+    //elapsed = std::chrono::duration_cast<std::chrono::seconds>(t2-t1);
+    elapsed = ((double)(t2-t1))/CLOCKS_PER_SEC;
 
-    res << myrank << " took " << elapsed.count() << " seconds to run dist_fmi_tree\n";
+    res << myrank << " took " << elapsed << " seconds to run dist_fmi_tree\n";
 
     if (!myrank)
     {
+	for (int i = 0; i < p; ++i) res << Stest[i] << "\n";
         free(Utest);
         free(Stest);
         free(Vttest);
