@@ -1,0 +1,3 @@
+add_executable(svd_aws_bench svd_aws_bench.cpp)
+target_link_libraries(svd_aws_bench lambda_svd)
+aws_lambda_package_target(svd_aws_bench)
