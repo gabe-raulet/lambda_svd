@@ -7,6 +7,7 @@
 #include "kiss.h"
 #include "mmiodense.h"
 #include "svdalgs.h"
+#include "mpitimer.h"
 #include "dist_mpi_tree.h"
 #include "cblas.h"
 #include "lapacke.h"
@@ -116,6 +117,15 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
     assert(p <= r);
     assert(p <= s);
 
+    if (!myrank) fprintf(stderr, "[svd_mpi_bench][random][m=%d,n=%d,r=%d,p=%d,s=%d,nprocs=%d]\n", m, n, r, p, s, nprocs);
+
+    double maxtime, proctime;
+
+    mpi_timer_t timer;
+    mpi_timer_init(&timer, comm);
+
+    mpi_timer_start(&timer);
+
     Aloc = (double*)malloc(m*s*sizeof(double));
 
     kiss_init();
@@ -134,11 +144,23 @@ int random_benchmark(int argc, char *argv[], MPI_Comm comm)
         Utest = Stest = Vttest = NULL;
     }
 
+    mpi_timer_stop(&timer);
+    mpi_timer_query(&timer, &maxtime, &proctime);
+
+    if (!myrank) fprintf(stderr, "[initialization][maxtime=%.5f(s),proctime=%.5f(s),meantime=%.5f(s)]\n", maxtime, proctime, proctime / nprocs);
+
+    mpi_timer_start(&timer);
+
     if (dist_mpi_tree(Aloc, Utest, Stest, Vttest, m, n, p, 0, comm))
     {
         MPI_Finalize();
         return 1;
     }
+
+    mpi_timer_stop(&timer);
+    mpi_timer_query(&timer, &maxtime, &proctime);
+
+    if (!myrank) fprintf(stderr, "[dist_mpi_tree][maxtime=%.5f(s),proctime=%.5f(s),meantime=%.5f(s)]\n", maxtime, proctime, proctime / nprocs);
 
     free(Aloc);
 
