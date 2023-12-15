@@ -8,7 +8,7 @@
     },
     "Direct": {
       "enabled": true,
-      "host": "127.0.0.1",
+      "host": "54.183.193.215",
       "port": 5000,
       "max_timeout": 5000
     }
